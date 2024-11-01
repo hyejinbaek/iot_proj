@@ -79,4 +79,5 @@ def genre_recommendations(target_title, matrix, items, k=10):
     }
     return pd.DataFrame(d)
 
-genre_recommendations('The Dark Knight Rises', cosine_sim_df, movie_data)
+res = genre_recommendations('The Dark Knight Rises', cosine_sim_df, movie_data)
+print(res)
