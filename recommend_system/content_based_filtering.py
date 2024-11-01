@@ -39,5 +39,44 @@ movie_data = pd.read_csv('./data/movies/movies_metadata.csv')
 movie_data =  movie_data.loc[movie_data['original_language'] == 'en', :]
 movie_data = movie_data[['id', 'title', 'original_language', 'genres']]
 
-print(movie_data.shape)
-movie_data.head()
+movie_keyword = pd.read_csv('./data/movies/keywords.csv')
+movie_data.id = movie_data.id.astype(int)
+movie_data = pd.merge(movie_data, movie_keyword, on='id')
+
+movie_data['genres'] = movie_data['genres'].apply(literal_eval)
+movie_data['genres'] = movie_data['genres'].apply(lambda x : [d['name'] for d in x]).apply(lambda x : " ".join(x))
+
+movie_data['keywords'] = movie_data['keywords'].apply(literal_eval)
+movie_data['keywords'] = movie_data['keywords'].apply(lambda x : [d['name'] for d in x]).apply(lambda x : " ".join(x))
+
+tfidf_vector = TfidfVectorizer()
+tfidf_matrix = tfidf_vector.fit_transform(movie_data['genres'] + " " + movie_data['keywords']).toarray()
+tfidf_matrix_feature = tfidf_vector.get_feature_names_out()
+
+tfidf_matrix = pd.DataFrame(tfidf_matrix, columns=tfidf_matrix_feature, index = movie_data.title)
+
+# 유사도 구하기
+# tf-idf vector를 코사인 유사도를 활용해 유사도 값을 구함
+cosine_sim = cosine_similarity(tfidf_matrix)
+
+cosine_sim_df = pd.DataFrame(cosine_sim, index = movie_data.title, columns = movie_data.title)
+
+# 3. Content Based Recommend
+# target title(추천 결과를 조회할 영화 제목)에 따라 코사인 유사도를 구한 matrix에서 유사도 데이터를 가져옴
+# 유사도 데이터 중 가장 유사도 값이 큰 데이터를 가져옴(가져올 대 top K개를 가져옴)
+
+def genre_recommendations(target_title, matrix, items, k=10):
+    recom_idx = matrix.loc[:, target_title].values.reshape(1, -1).argsort()[:, ::-1].flatten()[1:k+1]
+    recom_title = items.iloc[recom_idx, :].title.values
+    recom_genre = items.iloc[recom_idx, : ].genres.values
+    target_title_list = np.full(len(range(k)), target_title)
+    target_genre_list = np.full(len(range(k)), items[items.title == target_title].genres.values)
+    d = {
+        'target_title' : target_title_list,
+        'target_genre' : target_genre_list,
+        'recom_title' : recom_title,
+        'recom_genre' : recom_genre
+    }
+    return pd.DataFrame(d)
+
+genre_recommendations('The Dark Knight Rises', cosine_sim_df, movie_data)
