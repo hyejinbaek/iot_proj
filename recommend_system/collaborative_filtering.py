@@ -11,4 +11,16 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 data = pd.read_csv('./data/movies/ratings_small.csv')
+
+data = data.pivot_table('rating', index = 'userId', columns = 'movieId')
+
+ratings = pd.read_csv('./data/movies/ratings_small.csv')
+
+movies = pd.read_csv('./data/tmdb_5000_movies.csv')
+movies = movies.rename(columns = {'id': 'movieId'})
+
+ratings_movies = pd.merge(ratings, movies, on = 'movieId')
+
+data = ratings_movies.pivot_table('rating', index = 'userId', columns='title').fillna(0)
 print(data)
+
