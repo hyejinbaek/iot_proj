@@ -22,5 +22,14 @@ movies = movies.rename(columns = {'id': 'movieId'})
 ratings_movies = pd.merge(ratings, movies, on = 'movieId')
 
 data = ratings_movies.pivot_table('rating', index = 'userId', columns='title').fillna(0)
-print(data)
 
+data = data.transpose()
+
+movie_sim = cosine_similarity(data, data)
+movie_sim_df = pd.DataFrame(data = movie_sim, index = data.index, columns = data.index)
+
+# print(movie_sim_df["X-Men Origins: Wolverine"].sort_values(ascending=False)[1:10])
+# print("===================================================================================================")
+# print(movie_sim_df["Harry Potter and the Half-Blood Prince"].sort_values(ascending=False)[1:10])
+# print("===================================================================================================")
+# print(movie_sim_df["Harry Potter and the Half-Blood Prince"].sort_values(ascending=False)[:10])
