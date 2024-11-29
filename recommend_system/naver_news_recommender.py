@@ -132,9 +132,16 @@ result = get_recommened_contents(user_1, data_doc_title_content, model_title_con
 print(pd.DataFrame(result.loc[:, ['category', 'title_content']]))
 
 result = get_recommened_contents(user_2, data_doc_title_content, model_title_content)
-print(pd.DataFrame(result.loc[:, ['category', 'title_content']]))
+# print(pd.DataFrame(result.loc[:, ['category', 'title_content']]))
 
 result = get_recommened_contents(user_3, data_doc_title_content, model_title_content)
-print(pd.DataFrame(result.loc[:, ['category', 'title_content']]))
+# print(pd.DataFrame(result.loc[:, ['category', 'title_content']]))
 
 # 형태소 분석 후 결과
+user_1 = make_user_embedding(user_category_1.index.values.tolist(), data_doc_tok, model_tok) # 경제
+user_2 = make_user_embedding(user_category_2.index.values.tolist(), data_doc_tok, model_tok) # 정치
+user_3 = make_user_embedding(user_category_3.index.values.tolist(), data_doc_tok, model_tok) # IT과학
+
+
+result = get_recommened_contents(user_1, data_doc_tok, model_tok)
+print(pd.DataFrame(result.loc[:, ['category', 'title_content']]))
